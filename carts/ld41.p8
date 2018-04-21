@@ -67,15 +67,21 @@ function _update()
   end
  end
 
- if player.jumping then
-  force_y += 0.0
- elseif btn(2) then
-  player.jumping = true
-  if player.line > 0 then
-   lines[player.line].has_player = false
-   player.line = 0
+ if btnp(2) then
+  if player.jumping then
+   if not player.double_jump then
+    force_y += -6.3
+    player.double_jump = true
+   end
+  else
+   player.jumping = true
+   if player.line > 0 then
+    lines[player.line].has_player = false
+    player.line = 0
+   end
+   force_y += -4.8
+   player.double_jump = false
   end
-  force_y += -8.0
  end
 
  if btnp(5) then
