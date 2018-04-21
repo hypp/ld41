@@ -250,7 +250,6 @@ function _update()
 
  -- check if bullet hits enemies
  -- todo this is really slow
- -- todo fix so we use objects center instead of upperleft corner
  for bullet in all(bullets) do
   for enemy in all(enemies) do
    dx = (bullet.x+bullet.anchor_x) - (enemy.x+enemy.anchor_x)
@@ -322,9 +321,10 @@ function _draw()
   spr(player.note_length,player.x,player.y-2,1,2,true,true)
  end
   
+ colors = {8, 9, 10, 15, 14, 13} 
  for explosion in all(explosions) do
   for particle in all(explosion.particles) do
-   pset(particle.x, particle.y, 8)
+   pset(particle.x, particle.y, colors[flr(rnd(#colors))])
   end
  end
 end
