@@ -1,18 +1,9 @@
 pico-8 cartridge // http://www.pico-8.com
 version 16
 __lua__
-function _init()
- player={}
- player.x = 64
- player.y = 64
- player.vel_y = 0.0
- player.vel_x = 0.0
- player.acc_y = 0.0
- player.acc_x = 0.0
- player.jumping = false
- player.note_length = 0
- player.line = 0
 
+function _init()
+ init_player()
 
  y = 48
  lines = {}
@@ -20,7 +11,7 @@ function _init()
   line1={}
   line1.y = y
   line1.spring_x = 64
-  line1.spring_y = y+10
+  line1.spring_y = y
   line1.spring_vel_y = 0.0
   line1.spring_acc_y = 0.0
   line1.has_player = false
@@ -36,6 +27,20 @@ function _init()
  palt(0,false)
  palt(7,true)
 end
+
+function init_player()
+ player={}
+ player.x = 64
+ player.y = 0
+ player.vel_y = 0.0
+ player.vel_x = 0.0
+ player.acc_y = 0.0
+ player.acc_x = 0.0
+ player.jumping = false
+ player.note_length = 3
+ player.line = 0
+end
+
 
 function _update()
  -- handle all inputs
@@ -89,22 +94,20 @@ function _update()
  player.vel_y += player.acc_y
  player.x = player.x + player.vel_x
 
- if player.x < 0 then
-  player.x = 0
+ if player.x < 32 then
+  player.x = 32
  end
- if player.x > 127 then
-  player.x = 127
+ if player.x > 127-8 then
+  player.x = 127-8
  end
 
  player.y = player.y + player.vel_y
- 
- if player.y > 100 then
-  player.jumping = false
-  player.acc_y = 0.0
-  player.vel_y = 0.0
-  player.y = 100
+ if player.y > 128+16 then
+ -- player died
+  init_player()
  end
- 
+
+
  for l in all(lines) do
   if l.has_player then
    l.spring_x = player.x
@@ -128,6 +131,7 @@ function _update()
     value.has_player = true
     player.line = key
     player.jumping = false
+    sfx(key-1)
     break
    end
   end
@@ -142,10 +146,10 @@ function _draw()
   line(l.spring_x,l.spring_y,127,l.y,5)
  end
  
- --spr(64, 0, 48, 2, 4)
  sspr(0, 4*8, 2*8, 4*8, 2, 35, 32, 74)
 
- if player.y >= 64 then
+ -- line 3 is where we flip between up or down stem
+ if player.y >= lines[3].y then
   spr(player.note_length,player.x+1,player.y-14,1,2)
  else
   spr(player.note_length,player.x,player.y-2,1,2,true,true)
@@ -217,3 +221,9 @@ __gfx__
 77000000777777770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 77777777777777770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 77777777777777770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+012000001075000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+012000001375000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+012000001775000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+012000001a75000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+012000001d75000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
