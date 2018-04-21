@@ -63,7 +63,7 @@ function spawn_enemy()
  enemy.vel_x = -(rnd(2)+1)
  enemy.vel_y = 0.0
  enemy.radi = 8
- enemy.anchor_x = 8
+ enemy.anchor_x = 9
  enemy.anchor_y = 8
  add(enemies,enemy)
 end
@@ -114,9 +114,24 @@ function _update()
   bullet.vel_y = 0.0
   bullet.vel_x = 3.1
   bullet.sprite = 32+player.note_length
-  bullet.radi = 4
-  bullet.anchor_x = 4
-  bullet.anchor_y = 4
+  -- todo store this in a table
+  if player.note_length == 0 then
+   bullet.radi = 2
+   bullet.anchor_x = 3
+   bullet.anchor_y = 1
+  elseif player.note_length == 1 then
+   bullet.radi = 2
+   bullet.anchor_x = 3
+   bullet.anchor_y = 1
+  elseif player.note_length == 2 then
+   bullet.radi = 2.5
+   bullet.anchor_x = 1
+   bullet.anchor_y = 2.5
+  else
+   bullet.radi = 3.5
+   bullet.anchor_x = 2
+   bullet.anchor_y = 3
+  end
   add(bullets, bullet)
   sfx(6,3)
  end
