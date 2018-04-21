@@ -38,6 +38,10 @@ function _init()
 end
 
 function _update()
+ -- handle all inputs
+ -- calculate all forces
+ -- update all positions
+ -- check if we are on a new line
  local force_y = 0
  force_y += 0.6 -- gravity
 
@@ -63,6 +67,7 @@ function _update()
   player.note_length = (player.note_length + 1) % 4
  end
  
+ -- TODO notes should weigh different things
  if player.line > 0 then
   diff = lines[player.line].y - player.y
   force_y += diff*k - player.vel_y*d
@@ -105,7 +110,17 @@ function _update()
    l.spring_y += l.spring_vel_y
   end
  end
- 
+
+ -- if moving down, try to attach to line
+ if player.vel_y > 0 and player.line == 0 then
+  for key,value in pairs(lines) do
+   if value.y-8 < player.y and value.y+8 > player.y then
+    value.has_player = true
+    player.line = key
+    break
+   end
+  end
+ end
 
 end
 
