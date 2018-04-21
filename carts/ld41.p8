@@ -53,16 +53,26 @@ function _update()
   player.acc_x = 0.0
   player.vel_x = 0.0
  end
+
+
+ if btn(3) then
+  if player.line > 0 then
+   lines[player.line].has_player = false
+   player.line = 0
+  end
+ end
+
  if player.jumping then
   force_y += 0.0
- elseif btn(4) then
+ elseif btn(2) then
   player.jumping = true
   if player.line > 0 then
    lines[player.line].has_player = false
+   player.line = 0
   end
-  player.line = 0
   force_y += -8.0
  end
+
  if btnp(5) then
   player.note_length = (player.note_length + 1) % 4
  end
@@ -117,6 +127,7 @@ function _update()
    if value.y-8 < player.y and value.y+8 > player.y then
     value.has_player = true
     player.line = key
+    player.jumping = false
     break
    end
   end
