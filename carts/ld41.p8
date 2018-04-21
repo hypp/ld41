@@ -31,10 +31,17 @@ function _init()
  -- enemies
  enemies = {}
  
+ -- explosions
+ explosions = {}
+
  -- spring constants
  k = 0.085
  d = 0.125
 
+ -- gravity
+ gravity = 0.6
+
+ -- transparency
  palt(0,false)
  palt(7,true)
 
@@ -68,13 +75,29 @@ function spawn_enemy()
  add(enemies,enemy)
 end
 
+function spawn_explosion(x, y)
+ explosion = {}
+ explosion.particles = {}
+ for i=1,10 do
+  particle = {}
+  particle.y = y
+  particle.x = x
+  particle.vel_x = 0
+  particle.vel_y = 0
+  particle.acc_x = rnd(6)-3
+  particle.acc_y = rnd(6)-3
+  add(explosion.particles, particle)
+ end
+ add(explosions, explosion)
+end
+
 function _update()
  -- handle all inputs
  -- calculate all forces
  -- update all positions
  -- check if we are on a new line
  local force_y = 0
- force_y += 0.6 -- gravity
+ force_y += gravity
 
  -- btn 0,1 left and right
  if btn(0) then
@@ -133,7 +156,7 @@ function _update()
    bullet.anchor_y = 3
   end
   add(bullets, bullet)
-  sfx(6,3)
+  sfx(7,3)
  end
 
  -- btn 5 note length
@@ -219,8 +242,8 @@ function _update()
  end
 
  -- check if bullet hits enemies
- -- TODO this is really slow
- -- TODO fix so we use objects center instead of upperleft corner
+ -- todo this is really slow
+ -- todo fix so we use objects center instead of upperleft corner
  for bullet in all(bullets) do
   for enemy in all(enemies) do
    dx = (bullet.x+bullet.anchor_x) - (enemy.x+enemy.anchor_x)
@@ -229,15 +252,32 @@ function _update()
    radi = bullet.radi+enemy.radi
    if distance_squared < radi*radi then
     -- collision
-    -- todo add explosion instead of enemy
+    spawn_explosion(enemy.x+enemy.anchor_x,enemy.y+enemy.anchor_y)
+    
     del(bullets, bullet)
     del(enemies, enemy)
+    sfx(6,3)
    end
+  end -- for enemy
+ end -- for bullet
 
-  end
-end
+ for explosion in all(explosions) do
+  for particle in all(explosion.particles) do
+   particle.vel_x += particle.acc_x
+   particle.x += particle.vel_x   particle.acc_y += gravity
+   particle.vel_y += particle.acc_y
+   particle.y += particle.vel_y
 
-end
+   if particle.y > 128 or particle.x < 0 or particle.y > 128 then
+    del(explosion.particles, particle)
+   end
+  end -- for particle
+  if #explosion.particles == 0 then
+   del(explosions, explosion)
+  end 
+ end -- for explosion
+
+end -- update
 
 function _draw()
  -- clear screen
@@ -272,7 +312,13 @@ function _draw()
   spr(player.note_length,player.x,player.y-2,1,2,true,true)
  end
   
+ for explosion in all(explosions) do
+  for particle in all(explosion.particles) do
+   pset(particle.x, particle.y, 8)
+  end
+ end
 end
+
 __gfx__
 77777777777771777777717777777177777777777748555500000000000000000000000000000000000000000000000000000000000000000000000000000000
 77777777777771777777717777777117777777777777755700000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -345,8 +391,8 @@ __sfx__
 012000001a75000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 012000001d75000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 011000000007300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00100000336502d64026630206201b610146000e60011600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+01100000336712d66126651206411b631136210d62105611000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+010200003165029651236511e64118641146310f62108611026000160001200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 011000000c0733f515000003f5152f655000000c073000000c0733f5153f515000002f655000002f6553f0000c073000000c0733f5152f6553f515000003f5150c073000003f5150c0732f6550c0732f63533505
 011000000014000131001210014004131041210411104140001400000000140000000414000000000000000000140001310012100140041310412104111041400014000000001400000004140000000414000000
 0110000018350040001c3501c300243552434524335243252435524345243352432524355243452433524325183501c3001c3501c30018355183451833518325183551834518335183251c3551c3451c3351c325
