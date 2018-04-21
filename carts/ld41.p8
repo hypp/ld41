@@ -63,6 +63,8 @@ function spawn_enemy()
  enemy.vel_x = -(rnd(2)+1)
  enemy.vel_y = 0.0
  enemy.radi = 8
+ enemy.anchor_x = 8
+ enemy.anchor_y = 8
  add(enemies,enemy)
 end
 
@@ -113,6 +115,8 @@ function _update()
   bullet.vel_x = 3.1
   bullet.sprite = 32+player.note_length
   bullet.radi = 4
+  bullet.anchor_x = 4
+  bullet.anchor_y = 4
   add(bullets, bullet)
   sfx(6,3)
  end
@@ -171,7 +175,7 @@ function _update()
     value.has_player = true
     player.line = key
     player.jumping = false
-    sfx(key-1,3)
+    sfx(5-key,3)
     break
    end
   end
@@ -204,8 +208,8 @@ function _update()
  -- TODO fix so we use objects center instead of upperleft corner
  for bullet in all(bullets) do
   for enemy in all(enemies) do
-   dx = bullet.x - enemy.x
-   dy = bullet.y - enemy.y
+   dx = (bullet.x+bullet.anchor_x) - (enemy.x+enemy.anchor_x)
+   dy = (bullet.y+bullet.anchor_y) - (enemy.y+enemy.anchor_y)
    distance_squared = dx*dx+dy*dy
    radi = bullet.radi+enemy.radi
    if distance_squared < radi*radi then
@@ -236,13 +240,13 @@ function _draw()
  -- draw all bullets
  for bullet in all(bullets) do
   spr(bullet.sprite, bullet.x, bullet.y, 1, 1)
-  circ(bullet.x,bullet.y,bullet.radi,9)
+  circ(bullet.x+bullet.anchor_x,bullet.y+bullet.anchor_y,bullet.radi,9)
  end
 
  -- draw all enemies
  for enemy in all(enemies) do
   spr(4, enemy.x, enemy.y, 2, 2)
-  circ(enemy.x,enemy.y,enemy.radi,9)
+  circ(enemy.x+enemy.anchor_x,enemy.y+enemy.anchor_y,enemy.radi,9)
  end
 
  -- draw player
