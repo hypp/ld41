@@ -62,6 +62,7 @@ function spawn_enemy()
  enemy.y = rnd(128-16)
  enemy.vel_x = -(rnd(2)+1)
  enemy.vel_y = 0.0
+ enemy.radi = 8
  add(enemies,enemy)
 end
 
@@ -110,7 +111,8 @@ function _update()
   bullet.y = player.y
   bullet.vel_y = 0.0
   bullet.vel_x = 3.1
-  bullet.sprite = 32+player.note_length 
+  bullet.sprite = 32+player.note_length
+  bullet.radi = 4
   add(bullets, bullet)
   sfx(6,3)
  end
@@ -196,6 +198,26 @@ function _update()
  if #enemies < 4 then
   spawn_enemy()
  end
+
+ -- check if bullet hits enemies
+ -- TODO this is really slow
+ -- TODO fix so we use objects center instead of upperleft corner
+ for bullet in all(bullets) do
+  for enemy in all(enemies) do
+   dx = bullet.x - enemy.x
+   dy = bullet.y - enemy.y
+   distance_squared = dx*dx+dy*dy
+   radi = bullet.radi+enemy.radi
+   if distance_squared < radi*radi then
+    -- collision
+    -- todo add explosion instead of enemy
+    del(bullets, bullet)
+    del(enemies, enemy)
+   end
+
+  end
+end
+
 end
 
 function _draw()
@@ -214,11 +236,13 @@ function _draw()
  -- draw all bullets
  for bullet in all(bullets) do
   spr(bullet.sprite, bullet.x, bullet.y, 1, 1)
+  circ(bullet.x,bullet.y,bullet.radi,9)
  end
 
  -- draw all enemies
  for enemy in all(enemies) do
   spr(4, enemy.x, enemy.y, 2, 2)
+  circ(enemy.x,enemy.y,enemy.radi,9)
  end
 
  -- draw player
