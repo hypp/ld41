@@ -4,8 +4,31 @@ __lua__
 -- ld41 - sheet music editor and shoot'em up
 -- by mathias olsson for ludum dare 41
 
+-- TITLE / START SCREEN
 
-function _init()
+function title_init()
+ i = 3
+end
+
+function title_update()
+ -- if users presses button_x, start game
+ if btnp(5) then
+  mode = 1
+  game_init()
+ end
+end
+
+function title_draw()
+ cls(7)
+ print("Sheet music editor shoot'em up",0,40,0)
+ print("A game for Ludum Dare 41",0,50,0)
+ print("by Mathias Olsson",0,60,0)
+ print("Press button x to start",0,80,0)
+end
+
+-- GAME
+
+function game_init()
  -- player
  init_player()
 
@@ -94,7 +117,7 @@ function spawn_explosion(x, y)
  sfx(6,3)
 end
 
-function _update()
+function game_update()
  -- handle all inputs
  -- calculate all forces
  -- update all positions
@@ -193,7 +216,9 @@ function _update()
  player.y = player.y + player.vel_y
  if player.y > 128+16 then
  -- player died
-  init_player()
+  mode = 2
+  game_over_init()
+--  init_player()
  end
 
 
@@ -288,7 +313,7 @@ function _update()
 
 end -- update
 
-function _draw()
+function game_draw()
  -- clear screen
  cls(7)
 
@@ -328,6 +353,53 @@ function _draw()
   end
  end
 end
+
+-- GAME OVER
+
+function game_over_init()
+ i = 3
+end
+
+function game_over_update()
+ if btnp(4) and btnp(5) then
+  mode = 0
+  title_init()
+ end
+end
+
+function game_over_draw()
+ cls(7)
+ print("game over",0,40,0)
+ print("Press button x and button o to restart",0,80,0)
+end
+
+-- STATE MACHINE
+
+function _init()
+ mode = 0
+ title_init()
+end
+
+function _update()
+ if mode == 0 then
+  title_update()
+ elseif mode == 1 then
+  game_update()
+ else
+  game_over_update()
+ end
+end
+
+function _draw()
+ if mode == 0 then
+  title_draw()
+ elseif mode == 1 then
+  game_draw()
+ else
+  game_over_draw()
+ end
+end
+
 
 __gfx__
 77777777777771777777717777777177777777777748555500000000000000000000000000000000000000000000000000000000000000000000000000000000
