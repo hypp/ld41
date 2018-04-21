@@ -35,6 +35,8 @@ function _init()
  k = 0.085
  d = 0.125
 
+ palt(0,false)
+ palt(7,true)
 end
 
 function _update()
@@ -124,7 +126,7 @@ function _update()
  -- if moving down, try to attach to line
  if player.vel_y > 0 and player.line == 0 then
   for key,value in pairs(lines) do
-   if value.y-8 < player.y and value.y+8 > player.y then
+   if value.y-4 < player.y and value.y+4 > player.y then
     value.has_player = true
     player.line = key
     player.jumping = false
@@ -132,7 +134,6 @@ function _update()
    end
   end
  end
-
 end
 
 function _draw()
