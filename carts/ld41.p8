@@ -7,7 +7,8 @@ __lua__
 -- TITLE / START SCREEN
 
 function title_init()
- i = 3
+ -- no music while testing
+ --music()
 end
 
 function title_update()
@@ -67,9 +68,6 @@ function game_init()
  -- transparency
  palt(0,false)
  palt(7,true)
-
- -- no music while testing
- --music()
  
 end
 
