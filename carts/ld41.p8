@@ -72,6 +72,7 @@ function spawn_enemy()
  enemy.radi = 8
  enemy.anchor_x = 9
  enemy.anchor_y = 8
+ enemy.energy = 4
  add(enemies,enemy)
 end
 
@@ -89,6 +90,8 @@ function spawn_explosion(x, y)
   add(explosion.particles, particle)
  end
  add(explosions, explosion)
+ 
+ sfx(6,3)
 end
 
 function _update()
@@ -256,11 +259,13 @@ function _update()
    radi = bullet.radi+enemy.radi
    if distance_squared < radi*radi then
     -- collision
-    spawn_explosion(enemy.x+enemy.anchor_x,enemy.y+enemy.anchor_y)
-    
+    enemy.energy -= bullet.damage
+    if enemy.energy < 0 then
+     spawn_explosion(enemy.x+enemy.anchor_x,enemy.y+enemy.anchor_y)
+     del(enemies, enemy)
+    end
+
     del(bullets, bullet)
-    del(enemies, enemy)
-    sfx(6,3)
    end
   end -- for enemy
  end -- for bullet
