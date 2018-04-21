@@ -18,6 +18,10 @@ function _init()
  for i=1,5 do
   line1={}
   line1.y = y
+  line1.spring_x = 64
+  line1.spring_y = y+8
+  line1.spring_vel_y = 0.0
+  line1.spring_acc_y = 0.0
   line1.has_player = false
   add(lines,line1)
 
@@ -27,12 +31,15 @@ function _init()
  lines[3].has_player = true
  player.line = 3
 
+-- spring constants
+ k = 0.085
+ d = 0.125
+
 end
 
 function _update()
  local force_y = 0
  force_y += 0.6 -- gravity
-
 
  if btn(0) then
   player.acc_x = -1.0
@@ -57,8 +64,6 @@ function _update()
  end
  
  if player.line > 0 then
-  k = 0.045
-  d = 0.08
   diff = lines[player.line].y - player.y
   force_y += diff*k - player.vel_y*d
  end
@@ -85,18 +90,31 @@ function _update()
   player.y = 100
  end
  
+ for l in all(lines) do
+  if l.has_player then
+   l.spring_x = player.x
+   l.spring_y = player.y
+  else
+   force_y = 0.0
+--   force_y += 0.6 -- gravity
+   
+   diff = l.y - l.spring_y
+   force_y += diff*k - l.spring_vel_y*d
+   l.spring_acc_y = force_y
+   l.spring_vel_y += l.spring_acc_y
+   l.spring_y += l.spring_vel_y
+  end
+ end
+ 
+
 end
 
 function _draw()
  cls(7)
 
  for l in all(lines) do
-  if l.has_player then
-   line(0,l.y,player.x,player.y,5)
-   line(player.x,player.y,127,l.y,5) 
-  else
-   line(0,l.y,127,l.y,5)
-  end
+  line(0,l.y,l.spring_x,l.spring_y,5)
+  line(l.spring_x,l.spring_y,127,l.y,5)
  end
  
  if player.y >= 64 then
