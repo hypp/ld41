@@ -38,7 +38,7 @@ function _init()
  k = 0.085
  d = 0.125
 
- -- gravity
+ -- gravity for player
  gravity = 0.6
 
  -- transparency
@@ -78,14 +78,14 @@ end
 function spawn_explosion(x, y)
  explosion = {}
  explosion.particles = {}
- for i=1,10 do
+ for i=1,40 do
   particle = {}
   particle.y = y
   particle.x = x
-  particle.vel_x = 0
-  particle.vel_y = 0
-  particle.acc_x = rnd(6)-3
-  particle.acc_y = rnd(6)-3
+  particle.vel_x = rnd(6)-3
+  particle.vel_y = rnd(6)-3
+  particle.acc_x = 0
+  particle.acc_y = 0
   add(explosion.particles, particle)
  end
  add(explosions, explosion)
@@ -142,18 +142,22 @@ function _update()
    bullet.radi = 2
    bullet.anchor_x = 3
    bullet.anchor_y = 1
+   bullet.damage = 4
   elseif player.note_length == 1 then
    bullet.radi = 2
    bullet.anchor_x = 3
    bullet.anchor_y = 1
+   bullet.damage = 3
   elseif player.note_length == 2 then
    bullet.radi = 2.5
    bullet.anchor_x = 1
    bullet.anchor_y = 2.5
+   bullet.damage = 2
   else
    bullet.radi = 3.5
    bullet.anchor_x = 2
    bullet.anchor_y = 3
+   bullet.damage = 1
   end
   add(bullets, bullet)
   sfx(7,3)
@@ -264,7 +268,8 @@ function _update()
  for explosion in all(explosions) do
   for particle in all(explosion.particles) do
    particle.vel_x += particle.acc_x
-   particle.x += particle.vel_x   particle.acc_y += gravity
+   particle.x += particle.vel_x   
+   particle.acc_y += 0.02 -- gravity
    particle.vel_y += particle.acc_y
    particle.y += particle.vel_y
 
