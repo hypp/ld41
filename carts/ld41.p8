@@ -97,8 +97,6 @@ y8,        88    d8""""""""8b    88   `8b d8'   88  88
 
 
 -- todo features
--- different type of enemies
--- levels
 -- extra ledger lines
 -- enemies that fire
 -- hiscore
@@ -118,6 +116,8 @@ function game_init()
  lines = {}
  for i=1,5 do
   line1={}
+  line1.x0 = 0
+  line1.x1 = 127
   line1.y = y
   line1.spring_x = 64
   line1.spring_y = y
@@ -128,6 +128,18 @@ function game_init()
 
   y += 10
  end
+
+ line_u={}
+ line_u.x0 = 48
+ line_u.x1 = line_u.x0 + 16
+ line_u.y = lines[1].y-10
+ line_u.spring_x = line_u.x0+8
+ line_u.spring_y = line_u.y
+ line_u.spring_vel_y = 0.0
+ line_u.spring_acc_y = 0.0
+ line_u.has_player = false
+ add(lines,line_u)  
+
 
  -- bullets
  bullets = {}
@@ -667,8 +679,8 @@ function game_draw()
 
  -- draw lines
  for l in all(lines) do
-  line(0,l.y,l.spring_x,l.spring_y,5)
-  line(l.spring_x,l.spring_y,127,l.y,5)
+  line(l.x0,l.y,l.spring_x,l.spring_y,5)
+  line(l.spring_x,l.spring_y,l.x1,l.y,5)
  end
  
  -- draw treble clef
