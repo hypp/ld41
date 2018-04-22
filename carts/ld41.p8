@@ -360,15 +360,15 @@ function game_update()
  -- todo this is really slow
  for bullet in all(bullets) do
   for enemy in all(enemies) do
-   dx = (bullet.x+bullet.anchor_x) - (enemy.x+enemy.anchor_x)
-   dy = (bullet.y+bullet.anchor_y) - (enemy.y+enemy.anchor_y)
+   dx = (bullet.x) - (enemy.x)
+   dy = (bullet.y) - (enemy.y)
    distance_squared = dx*dx+dy*dy
    radi = bullet.radi+enemy.radi
    if distance_squared < radi*radi then
     -- collision
     enemy.energy -= bullet.damage
     if enemy.energy <= 0 then
-     spawn_explosion(enemy.x+enemy.anchor_x,enemy.y+enemy.anchor_y)
+     spawn_explosion(enemy.x,enemy.y)
      del(enemies, enemy)
     end
 
@@ -412,14 +412,14 @@ function game_draw()
 
  -- draw all bullets
  for bullet in all(bullets) do
-  spr(bullet.sprite, bullet.x, bullet.y, 1, 1)
-  circ(bullet.x+bullet.anchor_x,bullet.y+bullet.anchor_y,bullet.radi,9)
+  spr(bullet.sprite, bullet.x-bullet.anchor_x, bullet.y-bullet.anchor_y, 1, 1)
+  circ(bullet.x,bullet.y,bullet.radi,9)
  end
 
  -- draw all enemies
  for enemy in all(enemies) do
-  spr(4, enemy.x, enemy.y, 2, 2)
-  circ(enemy.x+enemy.anchor_x,enemy.y+enemy.anchor_y,enemy.radi,9)
+  spr(4, enemy.x-enemy.anchor_x, enemy.y-enemy.anchor_y, 2, 2)
+  circ(enemy.x,enemy.y,enemy.radi,9)
  end
 
  -- draw player
