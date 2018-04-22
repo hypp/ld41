@@ -139,6 +139,9 @@ function game_init()
  palt(0,false)
  palt(7,true)
  
+ -- go music
+ music(0)
+
 end
 
 function init_player()
@@ -156,6 +159,8 @@ function init_player()
  player.anchor_y = 13
  player.radi = 3
  player.flip = false
+ player.energy = 100
+ player.dead = false
 end
 
 function spawn_enemy()
@@ -168,6 +173,7 @@ function spawn_enemy()
  enemy.anchor_x = 9
  enemy.anchor_y = 8
  enemy.energy = 4
+ enemy.damage = 20
  add(enemies,enemy)
 end
 
@@ -197,102 +203,106 @@ function game_update()
  local force_y = 0
  force_y += gravity
 
- -- btn 0,1 left and right
- if btn(0) then
-  player.acc_x = -1.0
- elseif btn(1) then
-  player.acc_x = 1.0
- else
-  player.acc_x = 0.0
-  player.vel_x = 0.0
- end
-
- -- btn 2 jump
- if btnp(2) then
-  if not player.jumping then
-   player.jumping = true
-   if player.line > 0 then
-    lines[player.line].has_player = false
-    player.line = 0
-   end
-   force_y += -2.1*(4-player.note_length+1)
-  end
- end
-
- -- btn 3 release
- if btn(3) then
-  if player.line > 0 then
-   lines[player.line].has_player = false
-   player.line = 0
-  end
- end
-
- -- btn 4 fire
- if btnp(4) then
-  bullet = {}
-  bullet.x = player.x
-  bullet.y = player.y
-  bullet.vel_y = 0.0
-  bullet.vel_x = 3.1
-  bullet.sprite = 32+player.note_length
-  -- todo store this in a table
-  if player.note_length == 0 then
-   bullet.radi = 2
-   bullet.anchor_x = 3
-   bullet.anchor_y = 1
-   bullet.damage = 4
-  elseif player.note_length == 1 then
-   bullet.radi = 2
-   bullet.anchor_x = 3
-   bullet.anchor_y = 1
-   bullet.damage = 3
-  elseif player.note_length == 2 then
-   bullet.radi = 2.5
-   bullet.anchor_x = 1
-   bullet.anchor_y = 2.5
-   bullet.damage = 2
+ -- do not handle input if player is dead
+ if not player.dead then
+  -- btn 0,1 left and right
+  if btn(0) then
+    player.acc_x = -1.0
+  elseif btn(1) then
+    player.acc_x = 1.0
   else
-   bullet.radi = 3.5
-   bullet.anchor_x = 2
-   bullet.anchor_y = 3
-   bullet.damage = 1
+    player.acc_x = 0.0
+    player.vel_x = 0.0
   end
-  add(bullets, bullet)
-  sfx(7,3)
- end
 
- -- btn 5 note length
- if btnp(5) then
-  player.note_length = (player.note_length + 1) % 4
- end
+  -- btn 2 jump
+  if btnp(2) then
+    if not player.jumping then
+    player.jumping = true
+    if player.line > 0 then
+      lines[player.line].has_player = false
+      player.line = 0
+    end
+    force_y += -2.1*(4-player.note_length+1)
+    end
+  end
+
+  -- btn 3 release
+  if btn(3) then
+    if player.line > 0 then
+     lines[player.line].has_player = false
+     player.line = 0
+    end
+  end
+
+  -- btn 4 fire
+  if btnp(4) then
+    bullet = {}
+    bullet.x = player.x
+    bullet.y = player.y
+    bullet.vel_y = 0.0
+    bullet.vel_x = 3.1
+    bullet.sprite = 32+player.note_length
+    -- todo store this in a table
+    if player.note_length == 0 then
+    bullet.radi = 2
+    bullet.anchor_x = 3
+    bullet.anchor_y = 1
+    bullet.damage = 4
+    elseif player.note_length == 1 then
+    bullet.radi = 2
+    bullet.anchor_x = 3
+    bullet.anchor_y = 1
+    bullet.damage = 3
+    elseif player.note_length == 2 then
+    bullet.radi = 2.5
+    bullet.anchor_x = 1
+    bullet.anchor_y = 2.5
+    bullet.damage = 2
+    else
+    bullet.radi = 3.5
+    bullet.anchor_x = 2
+    bullet.anchor_y = 3
+    bullet.damage = 1
+    end
+    add(bullets, bullet)
+    sfx(7,3)
+  end
+
+  -- btn 5 note length
+  if btnp(5) then
+    player.note_length = (player.note_length + 1) % 4
+  end
+end -- if not player.dead
  
- -- todo notes should weigh different things
- if player.line > 0 then
-  diff = lines[player.line].y - player.y
-  force_y += diff*k - player.vel_y*d
- end
+ -- do not update player position if player is dead
+ if not player.dead then
+  -- todo notes should weigh different things
+  if player.line > 0 then
+    diff = lines[player.line].y - player.y
+    force_y += diff*k - player.vel_y*d
+  end
 
- player.acc_y = force_y
+  player.acc_y = force_y
 
- player.vel_x += player.acc_x
- player.vel_y += player.acc_y
- player.x = player.x + player.vel_x
+  player.vel_x += player.acc_x
+  player.vel_y += player.acc_y
+  player.x = player.x + player.vel_x
 
- if player.x < 32 then
-  player.x = 32
- end
- if player.x > 127-8 then
-  player.x = 127-8
- end
+  if player.x < 32 then
+    player.x = 32
+  end
+  if player.x > 127-8 then
+    player.x = 127-8
+  end
 
- player.y = player.y + player.vel_y
- if player.y > 128+16 then
- -- player died
-  mode = 2
-  game_over_init()
---  init_player()
- end
-
+  player.y = player.y + player.vel_y
+  if player.y > 128+16 then
+   -- player died
+   spawn_explosion(player.x,player.y)
+   player.dead = true
+  end
+ end -- if not player.dead
 
  for l in all(lines) do
   if l.has_player then
@@ -310,29 +320,31 @@ function game_update()
   end
  end
 
- -- if moving down, try to attach to line
- if player.vel_y > 0 and player.line == 0 then
-  for key,value in pairs(lines) do
-   if value.y-4 < player.y and value.y+4 > player.y then
-    value.has_player = true
-    player.line = key
-    player.jumping = false
-    sfx(5-key,3)
-    break
-   end
+ if not player.dead then
+  -- if moving down, try to attach to line
+  if player.vel_y > 0 and player.line == 0 then
+    for key,value in pairs(lines) do
+    if value.y-4 < player.y and value.y+4 > player.y then
+      value.has_player = true
+      player.line = key
+      player.jumping = false
+      sfx(5-key,3)
+      break
+    end
+    end
   end
- end
 
- -- check if above/below middle line
- if player.y >= lines[3].y then
-  player.flip = false
-  player.anchor_x = 3
-  player.anchor_y = 13
- else
-  player.flip = true
-  player.anchor_x = 4
-  player.anchor_y = 2
- end
+  -- check if above/below middle line
+  if player.y >= lines[3].y then
+    player.flip = false
+    player.anchor_x = 3
+    player.anchor_y = 13
+  else
+    player.flip = true
+    player.anchor_x = 4
+    player.anchor_y = 2
+  end
+ end -- if not player.dead
 
  -- move all bullets
  for bullet in all(bullets) do
@@ -377,6 +389,28 @@ function game_update()
   end -- for enemy
  end -- for bullet
 
+ if not player.dead then
+  -- check if enemy hits player
+  for enemy in all(enemies) do
+    dx = (player.x) - (enemy.x)
+    dy = (player.y) - (enemy.y)
+    distance_squared = dx*dx+dy*dy
+    radi = player.radi+enemy.radi
+    if distance_squared < radi*radi then
+    -- collision
+    player.energy -= enemy.damage
+    if player.energy <= 0 then
+      -- player died
+      spawn_explosion(player.x,player.y)
+      player.dead = true
+    end
+
+    spawn_explosion(enemy.x,enemy.y)
+    del(enemies, enemy)
+    end
+  end
+ end -- if not player.dead
+
  for explosion in all(explosions) do
   for particle in all(explosion.particles) do
    particle.vel_x += particle.acc_x
@@ -393,6 +427,16 @@ function game_update()
    del(explosions, explosion)
   end 
  end -- for explosion
+
+ -- if player has died and all explosions are done
+ if player.dead and #explosions == 0 then
+  if player.line > 0 then
+    lines[player.line].has_player = false
+    player.line = 0
+  end 
+  mode = 2
+  game_over_init()
+ end
 
 end -- update
 
@@ -413,19 +457,21 @@ function game_draw()
  -- draw all bullets
  for bullet in all(bullets) do
   spr(bullet.sprite, bullet.x-bullet.anchor_x, bullet.y-bullet.anchor_y, 1, 1)
-  circ(bullet.x,bullet.y,bullet.radi,9)
+  --circ(bullet.x,bullet.y,bullet.radi,9)
  end
 
  -- draw all enemies
  for enemy in all(enemies) do
   spr(4, enemy.x-enemy.anchor_x, enemy.y-enemy.anchor_y, 2, 2)
-  circ(enemy.x,enemy.y,enemy.radi,9)
+  --circ(enemy.x,enemy.y,enemy.radi,9)
  end
 
  -- draw player
- spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
- circ(player.x,player.y,player.radi,9)
-  
+ if not player.dead then
+  spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
+  --circ(player.x,player.y,player.radi,9)
+ end
+
  colors = {8, 9, 10, 15, 14, 13} 
  for explosion in all(explosions) do
   for particle in all(explosion.particles) do
