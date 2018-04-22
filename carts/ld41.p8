@@ -196,13 +196,16 @@ end
 function spawn_energy_bar()
  bar = {}
  bar.x = 140
- bar.y = rnd(128-16)
+ bar.y = rnd(lines[5].y)+8
  bar.vel_x = -(rnd(2)+1)
  bar.vel_y = 0.0
  bar.radi = 3
  bar.anchor_x = 3
  bar.anchor_y = 3
  bar.energy = 10 -- player gets n energy points when taking this
+ bar.animation_speed = 10 -- change sprite every N frames
+ bar.animation_count_down = bar.animation_speed
+ bar.animation_index = 0
  add(energy_bars, bar)
 end
 
@@ -431,44 +434,48 @@ end -- if not player.dead
  update_energy_bars()
 
  -- move all enemies
- for enemy in all(enemies) do
-    enemy.x += enemy.vel_x
-    enemy.y += enemy.vel_y
-    if enemy.x < 0-16 or enemy.x > 128+16 or enemy.y < 0-16 or enemy.y > 128.16 then
-      del(enemies, enemy)
-    end
- end
-
- if delay > 0 then
-  delay -= 1
- else
-  if #enemies < 4 then
-   spawn_enemy()
-  end
- end
+ update_enemies()
 
  -- check if bullet hits enemies
- -- todo this is really slow
- for bullet in all(bullets) do
-  for enemy in all(enemies) do
-   dx = (bullet.x) - (enemy.x)
-   dy = (bullet.y) - (enemy.y)
-   distance_squared = dx*dx+dy*dy
-   radi = bullet.radi+enemy.radi
-   if distance_squared < radi*radi then
-    -- collision
-    enemy.energy -= bullet.damage
-    if enemy.energy <= 0 then
-     player_add_score(100)
-     spawn_explosion(enemy.x,enemy.y)
-     del(enemies, enemy)
+ collision_enemy_bullet()
+
+ -- check if enemy hits player
+ collision_enemy_player()
+
+  -- check if energy bar hits player
+ collision_energy_bar_player()
+
+ -- update all explosions 
+ update_explosions()
+
+ -- if player has died and all explosions are done
+ if player.dead and #explosions == 0 then
+  game_over_init()
+ end
+
+end -- update
+
+function collision_energy_bar_player()
+ if not player.dead then
+  -- check if energy bar hits player
+  for bar in all(energy_bars) do
+    dx = (player.x) - (bar.x)
+    dy = (player.y) - (bar.y)
+    distance_squared = dx*dx+dy*dy
+    radi = player.radi+bar.radi
+    if distance_squared < radi*radi then
+     -- collision
+     player_add_score(50)
+     player_add_energy(bar.energy)
+
+     sfx(15,3)
+     del(energy_bars, bar)
     end
+  end -- for bar
+ end
+end
 
-    del(bullets, bullet)
-   end
-  end -- for enemy
- end -- for bullet
-
+function collision_enemy_player()
  if not player.dead then
   -- check if enemy hits player
   for enemy in all(enemies) do
@@ -489,36 +496,57 @@ end -- if not player.dead
      del(enemies, enemy)
     end
   end -- for enemy
+ end
+end
 
-  -- check if energy bar hits player
-  for bar in all(energy_bars) do
-    dx = (player.x) - (bar.x)
-    dy = (player.y) - (bar.y)
-    distance_squared = dx*dx+dy*dy
-    radi = player.radi+bar.radi
-    if distance_squared < radi*radi then
-     -- collision
-     player_add_score(50)
-     player_add_energy(bar.energy)
-
-     sfx(15,3)
-     del(energy_bars, bar)
+function collision_enemy_bullet()
+ -- todo this is really slow
+ for bullet in all(bullets) do
+  for enemy in all(enemies) do
+   dx = (bullet.x) - (enemy.x)
+   dy = (bullet.y) - (enemy.y)
+   distance_squared = dx*dx+dy*dy
+   radi = bullet.radi+enemy.radi
+   if distance_squared < radi*radi then
+    -- collision
+    enemy.energy -= bullet.damage
+    if enemy.energy <= 0 then
+     player_add_score(100)
+     spawn_explosion(enemy.x,enemy.y)
+     del(enemies, enemy)
     end
-  end -- for bar
-  
- end -- if not player.dead
 
- update_explosions()
+    del(bullets, bullet)
+   end
+  end -- for enemy
+ end -- for bullet
+end
 
- -- if player has died and all explosions are done
- if player.dead and #explosions == 0 then
-  game_over_init()
+function update_enemies()
+ for enemy in all(enemies) do
+    enemy.x += enemy.vel_x
+    enemy.y += enemy.vel_y
+    if enemy.x < 0-16 or enemy.x > 128+16 or enemy.y < 0-16 or enemy.y > 128.16 then
+      del(enemies, enemy)
+    end
  end
 
-end -- update
+ if delay > 0 then
+  delay -= 1
+ else
+  if #enemies < 4 then
+   spawn_enemy()
+  end
+ end
+end
 
 function update_energy_bars()
  for bar in all(energy_bars) do
+  bar.animation_count_down -= 1
+  if bar.animation_count_down == 0 then
+   bar.animation_count_down = bar.animation_speed
+   bar.animation_index = (bar.animation_index + 1) % 2
+  end
   bar.x += bar.vel_x
   bar.y += bar.vel_y
   if bar.x < 0-8 then
@@ -590,8 +618,8 @@ function game_draw()
 
  -- draw all energy bars
  for bar in all(energy_bars) do
-  spr(40, bar.x-bar.anchor_x, bar.y-bar.anchor_y, 1, 1)
-  circ(bar.x,bar.y,bar.radi,9)
+  spr(40+bar.animation_index, bar.x-bar.anchor_x, bar.y-bar.anchor_y, 1, 1)
+  --circ(bar.x,bar.y,bar.radi,9)
  end
 
  -- draw player
@@ -644,9 +672,9 @@ end
 
 function game_over_draw()
  cls(7)
- print("game over",0,40,0)
- print("your score was " .. player.score,0,60,0)
- print("press ❎ and 🅾️ to restart",0,90,0)
+ print("game over",4,40,0)
+ print("your score was " .. player.score,4,60,0)
+ print("press ❎ and 🅾️ to restart",4,90,0)
 end
 
 -- state machine
