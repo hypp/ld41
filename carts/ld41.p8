@@ -62,7 +62,6 @@ end
 function title_update()
  -- if users presses button_x, start game
  if btnp(5) then
-  mode = 1
   game_init()
  end
  scroll.y += scroll.vel_y
@@ -99,6 +98,9 @@ y8,        88    d8""""""""8b    88   `8b d8'   88  88
 function game_init()
  -- stop music
  music(-1)
+
+ -- max energy for player
+ max_energy = 100.0
 
  -- player
  init_player()
@@ -145,6 +147,8 @@ function game_init()
  -- go music
  music(0)
 
+ -- start rendering
+ mode = 1
 end
 
 function init_player()
@@ -162,8 +166,11 @@ function init_player()
  player.anchor_y = 13
  player.radi = 3
  player.flip = false
- player.energy = 100
+ player.energy = max_energy
+ player.energy_color = 9
  player.dead = false
+ player.score = 0
+ player.score_color = 9
 end
 
 function spawn_enemy()
@@ -207,12 +214,41 @@ function player_died()
  spawn_explosion(player.x,player.y)
 end
 
+function player_add_score(score)
+ local old_score = player.score
+ player.score += score
+ if player.score < 0 then
+  player.score = 0
+ end
+ if player.score > old_score then
+  -- todo flash the colors instead
+  player.score_color = 13
+ end
+end
+
+function player_add_energy(energy)
+ local old_energy = player.energy
+ player.energy += energy
+ if player.energy < 0 then
+  player.energy = 0
+ elseif player.energy > max_energy then
+  player.energy = max_energy
+ end
+ if old_energy > player.energy then
+  player.energy_color = 8
+ end
+end
 
 function game_update()
  -- handle all inputs
  -- calculate all forces
  -- update all positions
  -- check if we are on a new line
+
+ -- reset the color
+ player.score_color = 9
+ player.energy_color = 9
+
  local force_y = 0
  force_y += gravity
 
@@ -230,19 +266,21 @@ function game_update()
 
   -- btn 2 jump
   if btnp(2) then
-    if not player.jumping then
+   if not player.jumping then
     player.jumping = true
+    player_add_score(5-player.note_length)
     if player.line > 0 then
       lines[player.line].has_player = false
       player.line = 0
     end
     force_y += -2.1*(4-player.note_length+1)
-    end
+   end
   end
 
   -- btn 3 release
   if btn(3) then
     if player.line > 0 then
+     player_add_score(5-player.note_length)
      lines[player.line].has_player = false
      player.line = 0
     end
@@ -252,6 +290,7 @@ function game_update()
   if btn(4) then
    if not fire then
     fire = true
+    player_add_score(-(5-player.note_length))
     bullet = {}
     bullet.x = player.x
     bullet.y = player.y
@@ -397,6 +436,7 @@ end -- if not player.dead
     -- collision
     enemy.energy -= bullet.damage
     if enemy.energy <= 0 then
+     player_add_score(10)
      spawn_explosion(enemy.x,enemy.y)
      del(enemies, enemy)
     end
@@ -415,7 +455,7 @@ end -- if not player.dead
     radi = player.radi+enemy.radi
     if distance_squared < radi*radi then
     -- collision
-    player.energy -= enemy.damage
+    player_add_energy(-enemy.damage)
     if player.energy <= 0 then
       -- player died
       player_died()
@@ -483,7 +523,13 @@ function game_draw()
   spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
   --circ(player.x,player.y,player.radi,9)
  end
+ -- draw score and energy
+ print("score: " .. player.score, 4, 5, player.score_color)
+ local energy = (player.energy / max_energy) * 32
+ rectfill(4,14,4+energy,14+3,player.energy_color)
+ rect(4,14,4+32,14+3,1)
 
+ -- draw explosions
  colors = {8, 9, 10, 15, 14, 13} 
  for explosion in all(explosions) do
   for particle in all(explosion.particles) do
