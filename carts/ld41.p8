@@ -136,6 +136,11 @@ function game_init()
  delay = 5*30 -- n seconds delay before enemies appear
  enemies = {}
  
+ -- levels
+ init_levels()
+ current_level = 1
+ levels[current_level]:init()
+
  -- explosions
  explosions = {}
 
@@ -163,6 +168,24 @@ function game_init()
 
  -- start rendering
  mode = 1
+end
+
+function init_levels()
+ levels = {}
+ level1 = {}
+ level1.init = function (self)
+  self.num_enemies = 40
+  self.sprite_idx = 4
+  self.delay = delay
+ end
+ add(levels, level1)
+ level2 = {}
+ level2.init = function (self)
+  self.num_enemies = 40
+  self.sprite_idx = 42
+  self.delay = delay
+ end
+ add(levels, level2)
 end
 
 function init_player()
@@ -193,6 +216,7 @@ function spawn_enemy()
  enemy.y = rnd(128-16)+16
  enemy.vel_x = -(rnd(2)+1)
  enemy.vel_y = 0.0
+
  enemy.radi = 8
  enemy.anchor_x = 9
  enemy.anchor_y = 8
@@ -201,7 +225,12 @@ function spawn_enemy()
  enemy.animation_speed = 4 -- change sprite every n frames
  enemy.animation_count_down = enemy.animation_speed
  enemy.animation_index = 0
+
+ enemy.sprite_idx = levels[current_level].sprite_idx
  add(enemies,enemy)
+
+ levels[current_level].num_enemies -= 1
+ 
 end
 
 function spawn_energy_bar()
@@ -547,11 +576,22 @@ function update_enemies()
     end
  end
 
- if delay > 0 then
-  delay -= 1
+ if levels[current_level].delay > 0 then
+  levels[current_level].delay -= 1
  else
-  if #enemies < 4 then
-   spawn_enemy()
+  if levels[current_level].num_enemies > 0 then
+   if #enemies < 4 then
+    spawn_enemy()
+   end
+  else
+   if #enemies == 0 then
+    -- goto next level
+    current_level += 1
+    if current_level > 2 then
+     current_level = 1
+    end
+    levels[current_level]:init()
+   end
   end
  end
 end
@@ -628,7 +668,7 @@ function game_draw()
 
  -- draw all enemies
  for enemy in all(enemies) do
-  spr(42+enemy.animation_index, enemy.x-enemy.anchor_x, enemy.y-enemy.anchor_y, 2, 2)
+  spr(enemy.sprite_idx+enemy.animation_index, enemy.x-enemy.anchor_x, enemy.y-enemy.anchor_y, 2, 2)
   --circ(enemy.x,enemy.y,enemy.radi,9)
  end
 
@@ -648,6 +688,11 @@ function game_draw()
  local energy = (player.energy / max_energy) * 32
  rectfill(4,14,4+energy,14+3,player.energy_color)
  rect(4,14,4+32,14+3,1)
+
+ -- draw next level
+ if levels[current_level].delay > 0 then
+  print("get ready player one", 26, 24, 8)
+ end
 
  -- draw explosions
  colors = {8, 9, 10, 15, 14, 13} 
