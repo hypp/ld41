@@ -155,6 +155,7 @@ function init_player()
  player.anchor_x = 3
  player.anchor_y = 13
  player.radi = 3
+ player.flip = false
 end
 
 function spawn_enemy()
@@ -322,6 +323,17 @@ function game_update()
   end
  end
 
+ -- check if above/below middle line
+ if player.y >= lines[3].y then
+  player.flip = false
+  player.anchor_x = 3
+  player.anchor_y = 13
+ else
+  player.flip = true
+  player.anchor_x = 4
+  player.anchor_y = 2
+ end
+
  -- move all bullets
  for bullet in all(bullets) do
     bullet.x += bullet.vel_x
@@ -411,16 +423,8 @@ function game_draw()
  end
 
  -- draw player
- -- line 3 is where we flip between up or down stem
- if player.y >= lines[3].y then
-  player.flip = false
-  spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
-  circ(player.x,player.y,player.radi,9)
- else
-  player.flip = true
-  spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
-  circ(player.x,player.y,player.radi,9)
- end
+ spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
+ circ(player.x,player.y,player.radi,9)
   
  colors = {8, 9, 10, 15, 14, 13} 
  for explosion in all(explosions) do
