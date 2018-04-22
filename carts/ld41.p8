@@ -138,7 +138,10 @@ function game_init()
  -- transparency
  palt(0,false)
  palt(7,true)
- 
+
+ -- fire
+ fire = false
+
  -- go music
  music(0)
 
@@ -246,7 +249,9 @@ function game_update()
   end
 
   -- btn 4 fire
-  if btnp(4) then
+  if btn(4) then
+   if not fire then
+    fire = true
     bullet = {}
     bullet.x = player.x
     bullet.y = player.y
@@ -277,6 +282,9 @@ function game_update()
     end
     add(bullets, bullet)
     sfx(7,3)
+   end
+  else
+   fire = false
   end
 
   -- btn 5 note length
