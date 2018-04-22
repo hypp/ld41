@@ -303,7 +303,7 @@ end
 function spawn_energy_bar()
  bar = {}
  bar.x = 140
- bar.y = rnd(lines[5].y)+8
+ bar.y = rnd(128-16)+8
  bar.vel_x = -(rnd(2)+1)
  bar.vel_y = 0.0
  bar.radi = 3
