@@ -20,7 +20,6 @@ __lua__
 --]]
 
 function title_init()
- -- no music while testing
  music(8)
  scroll = {}
  scroll.y = 128
@@ -57,6 +56,7 @@ function title_init()
   "press ❎ to start",
  }
 
+ mode = 0
 end
 
 function title_update()
@@ -125,6 +125,7 @@ function game_init()
  bullets = {}
 
  -- enemies
+ delay = 5*30 -- N seconds delay before enemies appear
  enemies = {}
  
  -- explosions
@@ -420,8 +421,12 @@ end -- if not player.dead
     end
  end
 
- if #enemies < 4 then
-  spawn_enemy()
+ if delay > 0 then
+  delay -= 1
+ else
+  if #enemies < 4 then
+   spawn_enemy()
+  end
  end
 
  -- check if bullet hits enemies
@@ -436,7 +441,7 @@ end -- if not player.dead
     -- collision
     enemy.energy -= bullet.damage
     if enemy.energy <= 0 then
-     player_add_score(10)
+     player_add_score(100)
      spawn_explosion(enemy.x,enemy.y)
      del(enemies, enemy)
     end
@@ -455,18 +460,29 @@ end -- if not player.dead
     radi = player.radi+enemy.radi
     if distance_squared < radi*radi then
     -- collision
-    player_add_energy(-enemy.damage)
-    if player.energy <= 0 then
+     player_add_score(100)
+     player_add_energy(-enemy.damage)
+     if player.energy <= 0 then
       -- player died
       player_died()
-    end
+     end
 
     spawn_explosion(enemy.x,enemy.y)
     del(enemies, enemy)
-    end
+   end
   end
  end -- if not player.dead
 
+ update_explosions()
+
+ -- if player has died and all explosions are done
+ if player.dead and #explosions == 0 then
+  game_over_init()
+ end
+
+end -- update
+
+function update_explosions()
  for explosion in all(explosions) do
   for particle in all(explosion.particles) do
    particle.vel_x += particle.acc_x
@@ -483,14 +499,7 @@ end -- if not player.dead
    del(explosions, explosion)
   end 
  end -- for explosion
-
- -- if player has died and all explosions are done
- if player.dead and #explosions == 0 then
-  mode = 2
-  game_over_init()
- end
-
-end -- update
+end
 
 function game_draw()
  -- clear screen
@@ -554,12 +563,14 @@ y8,        88    d8""""""""8b    88   `8b d8'   88  88               y8,        
 --]]
 
 function game_over_init()
- i = 3
+ -- stop music
+ music(-1)
+
+ mode = 2
 end
 
 function game_over_update()
  if btnp(4) and btnp(5) then
-  mode = 0
   title_init()
  end
 end
@@ -567,7 +578,8 @@ end
 function game_over_draw()
  cls(7)
  print("game over",0,40,0)
- print("press ❎ and 🅾️ to restart",0,80,0)
+ print("your score was " .. player.score,0,60,0)
+ print("press ❎ and 🅾️ to restart",0,90,0)
 end
 
 -- state machine
