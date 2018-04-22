@@ -4,11 +4,46 @@ __lua__
 -- ld41 - sheet music editor and shoot'em up
 -- by mathias olsson for ludum dare 41
 
--- TITLE / START SCREEN
+-- title / start screen
 
 function title_init()
  -- no music while testing
  --music()
+ scroll = {}
+ scroll.y = 128
+ scroll.end_y = 128
+ scroll.vel_y = -0.5
+ scroll.msg = {
+  "i was expecting a quiet day in",
+  "front of my sheet music editor.",
+  "i was going to compose a suite",
+  "in d-minor, the saddest of all",
+  "keys. ",
+  "the suite would have made both",
+  "mozart and beethoven envious.",
+  "",
+  "all of a sudden evil aliens",
+  "from the deepest part of space",
+  "attacked and tried to destroy",
+  "my creativity. there was",
+  "nothing i could to do but",
+  "defend myself and the world.",
+  "",
+  "sheet music editor shoot'em up", 
+  "   a game for ludum dare 41",
+  "      by mathias olsson",
+  "",
+  "controls:",
+  "jump with ⬆️",
+  "release with ⬇️",
+  "go left with ⬅️",
+  "go right with ➡️",
+  "change note length with ❎",
+  "fire with 🅾️",
+  "",
+  "press ❎ to start",
+ }
+
 end
 
 function title_update()
@@ -17,17 +52,23 @@ function title_update()
   mode = 1
   game_init()
  end
+ scroll.y += scroll.vel_y
+ if scroll.end_y < 0 then
+  scroll.y = 128
+ end
 end
 
 function title_draw()
  cls(7)
- print("Sheet music editor shoot'em up",0,40,0)
- print("A game for Ludum Dare 41",0,50,0)
- print("by Mathias Olsson",0,60,0)
- print("Press button x to start",0,80,0)
+ local y = scroll.y
+ for msg in all(scroll.msg) do
+  print(msg,4,y,13)
+  y += 10
+ end
+ scroll.end_y = y
 end
 
--- GAME
+-- game
 
 function game_init()
  -- player
@@ -352,7 +393,7 @@ function game_draw()
  end
 end
 
--- GAME OVER
+-- game over
 
 function game_over_init()
  i = 3
@@ -368,10 +409,10 @@ end
 function game_over_draw()
  cls(7)
  print("game over",0,40,0)
- print("Press button x and button o to restart",0,80,0)
+ print("press ❎ and 🅾️ to restart",0,80,0)
 end
 
--- STATE MACHINE
+-- state machine
 
 function _init()
  mode = 0
