@@ -152,6 +152,9 @@ function init_player()
  player.jumping = false
  player.note_length = 3
  player.line = 0
+ player.anchor_x = 3
+ player.anchor_y = 13
+ player.radi = 3
 end
 
 function spawn_enemy()
@@ -352,7 +355,7 @@ function game_update()
    if distance_squared < radi*radi then
     -- collision
     enemy.energy -= bullet.damage
-    if enemy.energy < 0 then
+    if enemy.energy <= 0 then
      spawn_explosion(enemy.x+enemy.anchor_x,enemy.y+enemy.anchor_y)
      del(enemies, enemy)
     end
@@ -410,9 +413,13 @@ function game_draw()
  -- draw player
  -- line 3 is where we flip between up or down stem
  if player.y >= lines[3].y then
-  spr(player.note_length,player.x+1,player.y-14,1,2)
+  player.flip = false
+  spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
+  circ(player.x,player.y,player.radi,9)
  else
-  spr(player.note_length,player.x,player.y-2,1,2,true,true)
+  player.flip = true
+  spr(player.note_length,player.x-player.anchor_x,player.y-player.anchor_y,1,2,player.flip,player.flip)
+  circ(player.x,player.y,player.radi,9)
  end
   
  colors = {8, 9, 10, 15, 14, 13} 
