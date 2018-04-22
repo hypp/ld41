@@ -174,14 +174,18 @@ function init_levels()
  levels = {}
  level1 = {}
  level1.init = function (self)
-  self.num_enemies = 40
+  self.num_enemies = 20
+  self.energy = 4
+  self.damage = 40
   self.sprite_idx = 4
   self.delay = delay
  end
  add(levels, level1)
  level2 = {}
  level2.init = function (self)
-  self.num_enemies = 40
+  self.num_enemies = 30
+  self.energy = 6
+  self.damage = 60
   self.sprite_idx = 42
   self.delay = delay
  end
@@ -220,13 +224,14 @@ function spawn_enemy()
  enemy.radi = 8
  enemy.anchor_x = 9
  enemy.anchor_y = 8
- enemy.energy = 4
- enemy.damage = 20
  enemy.animation_speed = 4 -- change sprite every n frames
  enemy.animation_count_down = enemy.animation_speed
  enemy.animation_index = 0
 
  enemy.sprite_idx = levels[current_level].sprite_idx
+ enemy.energy = levels[current_level].energy
+ enemy.damage = levels[current_level].damage
+
  add(enemies,enemy)
 
  levels[current_level].num_enemies -= 1
